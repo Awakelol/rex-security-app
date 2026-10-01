@@ -18,11 +18,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.awakelol.rex.ui.theme.RexTheme
+import io.github.awakelol.rex.watch.GuardService
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        GuardService.start(this)
         setContent {
             RexTheme {
                 Surface(Modifier.fillMaxSize()) {

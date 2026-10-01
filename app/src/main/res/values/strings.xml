@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rex</string>
+
+    <!-- Notifications -->
+    <string name="channel_guard">Protection status</string>
+    <string name="channel_warning">Harmful app warnings</string>
+    <string name="channel_info">New apps</string>
+    <string name="guard_notification">Rex is protecting this phone.</string>
+    <string name="warning_notif_title">Careful: %1$s may be harmful</string>
+    <string name="warning_notif_text">Tap here to see what to do.</string>
+    <string name="info_notif_title">New app installed: %1$s</string>
+    <string name="info_notif_text">Rex has made a note of it.</string>
+
+    <!-- Warning screen -->
+    <string name="warning_title">Warning</string>
+    <string name="warning_body">This app was just installed. It may be harmful.</string>
+    <string name="warning_remove">Remove it</string>
+    <string name="call_person">Call %1$s</string>
+    <string name="call_helper">Call for help</string>
+    <string name="removed_title">It\'s gone</string>
+    <string name="removed_body">The app has been removed. Thank you.</string>
+    <string name="ok">OK</string>
+
+    <!-- Home screen -->
     <string name="home_protected">This phone is protected</string>
-    <string name="warning_title">Careful</string>
 </resources>

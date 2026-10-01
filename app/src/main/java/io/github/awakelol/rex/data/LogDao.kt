@@ -10,6 +10,9 @@ interface LogDao {
     @Insert
     suspend fun insert(entry: LogEntry)
 
-    @Query("SELECT * FROM log ORDER BY time DESC LIMIT :limit")
+    @Query("SELECT * FROM log ORDER BY time DESC, id DESC LIMIT :limit")
     fun recent(limit: Int = 500): Flow<List<LogEntry>>
+
+    @Query("DELETE FROM log WHERE id NOT IN (SELECT id FROM log ORDER BY time DESC, id DESC LIMIT :keep)")
+    suspend fun trim(keep: Int = 2000)
 }
