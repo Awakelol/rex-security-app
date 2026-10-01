@@ -1,8 +1,22 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
 }
+
+// Release signing: env vars on CI, or an untracked keystore.properties locally.
+// Without either, release builds just come out unsigned.
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+fun signingValue(env: String, prop: String): String? =
+    providers.environmentVariable(env).orNull ?: keystoreProps.getProperty(prop)
+
+val releaseStoreFile = signingValue("REX_KEYSTORE", "storeFile")
+val releaseStorePassword = signingValue("REX_KEYSTORE_PASSWORD", "storePassword")
 
 android {
     namespace = "io.github.awakelol.rex"
@@ -12,8 +26,25 @@ android {
         applicationId = "io.github.awakelol.rex"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = providers.gradleProperty("rexVersionCode").orNull?.toInt() ?: 1
+        versionName = providers.gradleProperty("rexVersionName").orNull ?: "0.1"
+    }
+
+    signingConfigs {
+        if (releaseStoreFile != null && releaseStorePassword != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = releaseStorePassword
+                keyAlias = "rex"
+                keyPassword = releaseStorePassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.findByName("release")
+        }
     }
 
     compileOptions {

@@ -16,46 +16,58 @@ notifications that websites push through the browser ("Your phone is infected! C
 
 Rex never uninstalls or kills anything by itself. It warns, hides notifications, and tells you.
 
-## Building
+## Getting the APK
 
-You need JDK 17 or newer and the Android SDK (platform 37, build-tools 36). Create
-`local.properties` in the project root pointing at your SDK (this file is git-ignored):
+The latest signed build is always at:
 
-```
-sdk.dir=C\:\\Users\\you\\AppData\\Local\\Android\\Sdk
-```
+**https://github.com/Awakelol/rex-security-app/releases/latest/download/rex.apk**
 
-Then build:
+All versions are on the [Releases](https://github.com/Awakelol/rex-security-app/releases) page.
 
-```
-gradlew.bat assembleDebug      # Windows
-./gradlew assembleDebug        # macOS / Linux
-```
-
-The APK ends up at `app/build/outputs/apk/debug/app-debug.apk`.
-
-Run the unit tests with `gradlew test`.
+Every release is signed with the same key, so a newer one installs over an older one and Rex
+keeps its settings. Don't mix in a build from your own computer (`assembleDebug`): it's signed
+with a different key, and Android will refuse to update one with the other. If that happens,
+uninstall Rex and install the GitHub version.
 
 ## Installing on a Samsung phone
+
+First, on the phone:
+
+1. **Turn off Auto Blocker for now** (One UI 6 and later). Settings → Security and privacy →
+   Auto Blocker. It blocks both USB installs and installs from the browser.
+
+### Option A: from your computer (recommended)
 
 1. **Turn on Developer options.** Settings → About phone → Software information → tap
    **Build number** seven times. Enter the phone's PIN if asked.
 2. **Turn on USB debugging.** Settings → Developer options → USB debugging.
-3. **Turn off Auto Blocker for now** (One UI 6 and later). Settings → Security and privacy →
-   Auto Blocker. It blocks USB commands, so `adb` won't work while it's on.
-4. Plug the phone into your computer. Tap **Allow** on the "Allow USB debugging?" prompt
+3. Plug the phone into your computer. Tap **Allow** on the "Allow USB debugging?" prompt
    (tick "Always allow from this computer").
-5. Check the phone shows up, then install:
+4. Download and install:
 
    ```
+   curl -LO https://github.com/Awakelol/rex-security-app/releases/latest/download/rex.apk
    adb devices
-   adb install -r app\build\outputs\apk\debug\app-debug.apk
+   adb install -r rex.apk
    ```
 
-   `-r` lets you install over an older copy without losing Rex's data.
-6. When you're done, it's worth turning **Auto Blocker back on**. It stops apps being installed
-   from outside the Play Store and Galaxy Store, which covers a lot of the damage on its own.
-   You'll need to switch it off again whenever you update Rex.
+   `-r` installs over an older copy without losing Rex's data.
+
+### Option B: straight from the phone
+
+1. Open the download link above in Chrome (or Samsung Internet) on the phone.
+2. Tap the downloaded `rex.apk`. Android will ask to let the browser **install unknown apps**.
+   Allow it for this one install.
+3. If Play Protect warns about an unknown app, tap **More details → Install anyway**.
+4. **Afterwards, take that permission away again:** Settings → Apps → Chrome → Install unknown
+   apps → off. Letting the browser install apps is exactly how the junk gets on, so don't
+   leave it on.
+
+### When you're done
+
+Turn **Auto Blocker back on**. It stops apps being installed from outside the Play Store and
+Galaxy Store, which covers a lot of the damage on its own. Switch it off again whenever you
+update Rex.
 
 ### "Restricted setting"
 
@@ -146,6 +158,56 @@ Be honest with yourself about these:
   it should stay up, and a check every 15 minutes catches anything installed while it was down,
   but delays are possible.
 - **Discord needs internet.** Alerts queue up while the phone is offline and are sent later.
+
+## Building it yourself
+
+You need JDK 17 or newer and the Android SDK (platform 37, build-tools 36). Create
+`local.properties` in the project root pointing at your SDK (it's git-ignored):
+
+```
+sdk.dir=C\:\\Users\\you\\AppData\\Local\\Android\\Sdk
+```
+
+Then `gradlew.bat assembleDebug` (Windows) or `./gradlew assembleDebug` (macOS/Linux). The APK
+lands in `app/build/outputs/apk/debug/`. Run the unit tests with `gradlew test`.
+
+## Publishing a new version
+
+Releases are built and signed by GitHub Actions (`.github/workflows/release.yml`). Either:
+
+- on GitHub, go to **Actions → Release → Run workflow** and type a version like `0.2.0`, or
+- push a tag: `git tag v0.2.0 && git push origin v0.2.0`
+
+A few minutes later the release shows up with `rex.apk` attached, and the "latest" link above
+points at it.
+
+### One-time setup: the signing key
+
+The workflow needs the release signing key, stored as two repository secrets. On GitHub, go to
+**Settings → Secrets and variables → Actions → New repository secret** and add:
+
+| Name | Value |
+|---|---|
+| `REX_KEYSTORE_BASE64` | the keystore file, base64-encoded |
+| `REX_KEYSTORE_PASSWORD` | the keystore password |
+
+The key's alias must be `rex`. To make a new key:
+
+```
+keytool -genkeypair -keystore rex-release.jks -storetype PKCS12 -alias rex -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Rex"
+base64 -w0 rex-release.jks > rex-release.b64
+```
+
+**Back the key up and never commit it.** If it's lost, new releases can't update the installed
+app: you'd have to uninstall Rex (losing its settings and approved list) and start over. Anyone
+who has it could sign a fake update.
+
+To sign release builds locally, create an untracked `keystore.properties` in the project root:
+
+```
+storeFile=/path/to/rex-release.jks
+storePassword=...
+```
 
 ## How it's put together
 
