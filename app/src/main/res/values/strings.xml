@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rex</string>
+    <string name="home_protected">This phone is protected</string>
+    <string name="warning_title">Careful</string>
+</resources>
